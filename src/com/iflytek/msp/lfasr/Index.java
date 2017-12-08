@@ -46,7 +46,7 @@ public class Index {
 	
 	public static void main(String[] args) {
 		
-		PropertyConfigurator.configure("source\\log4j2.properties");
+		PropertyConfigurator.configure("D:\\workspace-java\\MscDemo\\source\\log4j2.properties");
 		//查询次数对应的时间间隔
 		Logger logger = Logger.getLogger(Log4jTest.class);
 		HashMap<Integer, Integer> intervalTimes = new HashMap<>();
@@ -58,8 +58,8 @@ public class Index {
 		intervalTimes.put(6, 60*60*6);
 		
 		
-		// 加载配置文件
-		PropertyConfigurator.configure("log4j.properties");
+		/*// 加载配置文件
+		PropertyConfigurator.configure("log4j.properties");*/
 		
 		// 初始化LFASR实例
 		LfasrClientImp lc = null;
