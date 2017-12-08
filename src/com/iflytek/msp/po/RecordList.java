@@ -14,6 +14,8 @@ public class RecordList {
 	private int queryTimes;
 	private int nextQueryTime;
 	
+	private int fileSize;
+	
 	public int getId() {
 		return id;
 	}
@@ -62,7 +64,11 @@ public class RecordList {
 	public void setNextQueryTime(int nextQueryTime) {
 		this.nextQueryTime = nextQueryTime;
 	}
-	
-	
+	public int getFileSize() {
+		return fileSize;
+	}
+	public void setFileSize(int fileSize) {
+		this.fileSize = fileSize;
+	}
 	
 }

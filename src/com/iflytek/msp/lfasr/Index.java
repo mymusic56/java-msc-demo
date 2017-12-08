@@ -1,19 +1,28 @@
 package com.iflytek.msp.lfasr;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.PropertyConfigurator;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 import com.iflytek.msp.cpdb.lfasr.client.LfasrClientImp;
 import com.iflytek.msp.cpdb.lfasr.exception.LfasrException;
 import com.iflytek.msp.cpdb.lfasr.model.LfasrType;
 import com.iflytek.msp.cpdb.lfasr.model.Message;
 import com.iflytek.msp.cpdb.lfasr.model.ProgressStatus;
 import com.iflytek.msp.dao.RecordListDao;
+import com.iflytek.msp.dao.RecordListExtraDao;
 import com.iflytek.msp.po.RecordList;
+import com.iflytek.msp.po.RecordListExtra;
+import com.iflytek.msp.po.jsonbean.Content;
+import com.iflytek.msp.po.jsonbean.WordsResultList;
 import com.iflytek.msp.util.FileDownload;
 
 
@@ -30,6 +39,9 @@ public class Index {
 	private static int sleepSecond = 20;
 	
 	private static int limitQueryTime = 6;
+	
+	//默认查询间隔时间
+	private static int intervalTime = 10;
 	
 	public static void main(String[] args) {
 		//查询次数对应的时间间隔
@@ -110,7 +122,9 @@ public class Index {
 				//上传完成
 				if(res.get("status") == "1"){
 					//保存记录的任务ID和下次查询时间
-					int next_query_time = (int)new Date().getTime()/1000+60;
+					int tmpIntervalTime = record.getFileSize() / 1000;
+					tmpIntervalTime = tmpIntervalTime == 0 ? intervalTime : tmpIntervalTime;
+					int next_query_time = ((int)new Date().getTime()/1000) + tmpIntervalTime;
 					boolean a2 = recordDao.updateUploadStatus(record.getId(), 3, res.get("task_id"), next_query_time);
 				}else{
 					boolean a3 = recordDao.updateUploadStatus(record.getId(), -1);
@@ -125,6 +139,7 @@ public class Index {
 			 * 获取处理状态， 如果已处理，就获取处理后的内容
 			 * 获取第一条的处理状态
 			 */
+			
 			int times = (int)(new Date().getTime()/1000);
 			record = recordDao.getRecord(3, times);
 			String task_id = "";
@@ -141,22 +156,43 @@ public class Index {
 					
 					//处理成功, 并更新数据库
 					int s = dealRes.get("status") == "1" ? 1 : -1;
-					recordDao.updateRecordInfo(record.getId(), s, dealRes.get("data"));
+					
+					//获取解析后的数据
+					HashMap<String, String> res = index.parseJson(dealRes.get("data"));
+					
+					//保存解析后的数据
+					//判断记录是否已经存在
+					RecordListExtra recordExtra = recordDao.checkRecordExtraExist(task_id);
+					
+					int as = -1;
+					if(recordExtra != null){
+						Boolean addStatus = recordDao.updateRecordTextInfo(recordExtra.getId(), dealRes.get("data"), res.get("originalStr"), res.get("segementStr"));
+						as = addStatus == true ? 1:-1;
+					}else{
+						Boolean addStatus = recordDao.addRecordTextInfo(task_id, dealRes.get("data"), res.get("originalStr"), res.get("segementStr"));
+						as = addStatus == true ? 1:-1;
+					}
+					
+					//更新保存状态
+					recordDao.updateRecordInfo(record.getId(), as, dealRes.get("data"));
 					
 				}else if(dealSatus.get("status") == "-1"){
 					recordDao.updateRecordInfo(record.getId(), -1, dealSatus.get("data"));
 					
-				}else if(dealSatus.get("status") == "-1"){
+				}else if(dealSatus.get("status") == "2"){
 					//更新下次处理时间
-					int intervalTime = 0;
+					//间隔时间为文件的M数
 					
+					int tmpIntervalTime = record.getFileSize() / 1000;
+					tmpIntervalTime = tmpIntervalTime == 0 ? intervalTime : tmpIntervalTime;
+					
+					times = (int)(new Date().getTime()/1000);
 					//超过查询次数， 或者没有配置查询时间间隔， 标记异常
-					if(record.getQueryTimes() > limitQueryTime || intervalTimes.get(record.getQueryTimes()) == null){
+					if(record.getQueryTimes() > limitQueryTime){
 						recordDao.updateUploadStatus(record.getId(), 4);
 					}else{
-						recordDao.updateNextQueryTime(record.getId(), times + intervalTime);
+						recordDao.updateNextQueryTime(record.getId(), times + tmpIntervalTime*record.getQueryTimes());
 					}
-					
 				}
 			}
 			
@@ -318,10 +354,33 @@ public class Index {
 		return res;
 	}
 	
-	public String parseJson(){
-		
-		return "";
+	/**
+	 * 解析json数据
+	 * @param str
+	 * @return
+	 */
+	public HashMap<String, String> parseJson(String str){
+		Gson gson = new Gson();    
+        //把JSON数据转化为对象
+    	List<Content> list = new ArrayList<>();
+    	JsonArray array = new JsonParser().parse(str).getAsJsonArray();
+    	
+    	String segementStr = "";
+    	String originalStr = "";
+    	for(int i=0; i < array.size(); i++){
+    		
+    		Content content = gson.fromJson(array.get(i), Content.class);
+    		List<WordsResultList> wordsResultList = content.getWordsResultList();
+    		//获取原始字符串
+    		originalStr += content.getOnebest();
+    		//獲取分詞后的字符串
+    		for(int j=0; j < wordsResultList.size(); j++){
+    			segementStr += " "+wordsResultList.get(j).getWordsName();
+    		}
+    	}
+    	HashMap<String, String> res = new HashMap<>();
+    	res.put("originalStr", originalStr);
+    	res.put("segementStr", segementStr);
+    	return res;
 	}
-	
-	
 }

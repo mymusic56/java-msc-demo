@@ -4,8 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 
 import com.iflytek.msp.po.RecordList;
+import com.iflytek.msp.po.RecordListExtra;
 import com.iflytek.msp.util.DBUtil;
 
 public class RecordListDao {
@@ -13,6 +15,93 @@ public class RecordListDao {
 	private static Connection connection = null;
 	private static PreparedStatement ps = null;
 	private static ResultSet rs = null;
+	
+	/**
+	 * 保存转换后的文字信息
+	 * @return
+	 */
+	public boolean addRecordTextInfo(String task_id, String contentJson, String originalStr, String segementStr){
+		int count = 0;
+		try {
+			
+			String sql = "insert into rec_record_lists_extra(task_id,content_json,content,content_words) values(?,?,?,?)";
+			connection = DBUtil.getConnection();
+			ps = DBUtil.getPreparedStatement(connection, sql);
+			ps.setString(1, task_id);
+			ps.setString(2, contentJson);
+			ps.setString(3, originalStr);
+			ps.setString(4, segementStr);
+			
+			count = ps.executeUpdate();
+			System.out.println(count);
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.closeAll(connection, ps, rs);
+		}
+		if(count > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 保存转换后的文字信息
+	 * @return
+	 */
+	public boolean updateRecordTextInfo(int id, String contentJson, String originalStr, String segementStr){
+		int count = 0;
+		try {
+			
+			String sql = "update rec_record_lists_extra set content_json=?, content=?, content_words=? where id=?";
+			connection = DBUtil.getConnection();
+			ps = DBUtil.getPreparedStatement(connection, sql);
+			ps.setString(1, contentJson);
+			ps.setString(2, originalStr);
+			ps.setString(3, segementStr);
+			ps.setInt(4, id);
+			
+			count = ps.executeUpdate();
+			System.out.println(count);
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.closeAll(connection, ps, rs);
+		}
+		if(count > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	public RecordListExtra checkRecordExtraExist(String task_id){
+		RecordListExtra rList = null;
+		
+		Connection connection = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			String sql = "select id from rec_record_lists_extra where task_id=? order by id DESC limit 1";
+			connection = DBUtil.getConnection();
+			ps = DBUtil.getPreparedStatement(connection, sql);
+			ps.setString(1, task_id);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				rList = new RecordListExtra();
+				rList.setId(rs.getInt("id"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.closeAll(connection, ps, rs);
+		}
+		
+		return rList;
+	}
 	
 	/**
 	 * 更具上传第三方服务器状态来获取录音记录
@@ -35,8 +124,9 @@ public class RecordListDao {
 			while (rs.next()) {
 				rList = new RecordList();
 				rList.setId(rs.getInt("id"));
-				rList.setPath(rs.getString("path"));
+				rList.setPath(rs.getString("file_path"));
 				rList.setHasConvert(rs.getInt("has_convert"));
+				rList.setFileSize(rs.getInt("file_size"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -76,9 +166,12 @@ public class RecordListDao {
 			while (rs.next()) {
 				rList = new RecordList();
 				rList.setId(rs.getInt("id"));
-				rList.setPath(rs.getString("path"));
+				rList.setPath(rs.getString("file_path"));
 				rList.setHasConvert(rs.getInt("has_convert"));
 				rList.setTaskId(rs.getString("task_id"));
+				rList.setFileSize(rs.getInt("file_size"));
+				rList.setQueryTimes(rs.getInt("query_times"));
+				
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -150,12 +243,11 @@ public class RecordListDao {
 		int count = 0;
 		try {
 			
-			String sql = "update rec_record_lists set has_convert=?,content_json=? where id=?";
+			String sql = "update rec_record_lists set has_convert=? where id=?";
 			connection = DBUtil.getConnection();
 			ps = DBUtil.getPreparedStatement(connection, sql);
 			ps.setInt(1, status);
-			ps.setString(2, contentJson);
-			ps.setInt(3, id);
+			ps.setInt(2, id);
 			
 			count = ps.executeUpdate();
 			System.out.println(count);
