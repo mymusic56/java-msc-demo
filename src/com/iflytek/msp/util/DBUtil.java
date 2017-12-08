@@ -42,7 +42,7 @@ public class DBUtil {
 			/*
 			 * 第二种方式：
 			 */
-			ResourceBundle rb = ResourceBundle.getBundle("com.iflytek.msp.config.dbconfig");
+			ResourceBundle rb = ResourceBundle.getBundle("dbconfig");
 			String database = rb.getString("database");
 			driver = rb.getString(database+"Driver");
 			url = rb.getString(database+"Url");

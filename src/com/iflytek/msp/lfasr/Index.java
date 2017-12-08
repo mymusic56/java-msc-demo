@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import com.alibaba.fastjson.JSON;
@@ -36,7 +37,7 @@ public class Index {
 	 * */
 	private static final LfasrType type = LfasrType.LFASR_STANDARD_RECORDED_AUDIO;
 	// 等待时长（秒）
-	private static int sleepSecond = 20;
+	private static int sleepSecond = 10;
 	
 	private static int limitQueryTime = 6;
 	
@@ -44,8 +45,10 @@ public class Index {
 	private static int intervalTime = 10;
 	
 	public static void main(String[] args) {
-		//查询次数对应的时间间隔
 		
+		PropertyConfigurator.configure("source\\log4j2.properties");
+		//查询次数对应的时间间隔
+		Logger logger = Logger.getLogger(Log4jTest.class);
 		HashMap<Integer, Integer> intervalTimes = new HashMap<>();
 		intervalTimes.put(1, 60*1);
 		intervalTimes.put(2, 60*5);
@@ -101,11 +104,11 @@ public class Index {
 //				String na = nameArr[nameArr.length - 1];
 				filename = String.valueOf(new Date().getTime())+"-"+record.getPath().substring(record.getPath().lastIndexOf("/")+1);
 				
-				System.out.println("start download file: "+filename);
-				
+//				System.out.println("start download file: "+filename);
+				logger.info("start download file: "+filename);
 				filePath = FileDownload.saveUrlAs(record.getPath(), tempFileDir, filename, "GET");
-				System.out.println("end download file:"+filePath);
-				
+//				System.out.println("end download file:"+filePath);
+				logger.info("end download file:"+filePath);
 				if("".equals(filePath)){
 					
 					//标记为异常
@@ -130,6 +133,8 @@ public class Index {
 					boolean a3 = recordDao.updateUploadStatus(record.getId(), -1);
 				}
 			}else{
+				logger.info("没有需要上传的数据！");
+
 				System.out.println("没有需要上传的数据！");
 			}
 			
@@ -166,10 +171,10 @@ public class Index {
 					
 					int as = -1;
 					if(recordExtra != null){
-						Boolean addStatus = recordDao.updateRecordTextInfo(recordExtra.getId(), dealRes.get("data"), res.get("originalStr"), res.get("segementStr"));
+						Boolean addStatus = recordDao.updateRecordTextInfo(recordExtra.getId(), res.get("originalStr"), res.get("segementStr"));
 						as = addStatus == true ? 1:-1;
 					}else{
-						Boolean addStatus = recordDao.addRecordTextInfo(task_id, dealRes.get("data"), res.get("originalStr"), res.get("segementStr"));
+						Boolean addStatus = recordDao.addRecordTextInfo(task_id, res.get("originalStr"), res.get("segementStr"));
 						as = addStatus == true ? 1:-1;
 					}
 					
@@ -199,6 +204,7 @@ public class Index {
 			
 			//每执行完一次睡眠20s.
 			try {
+				logger.info("休息中。。。");
 				Thread.sleep(sleepSecond * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -206,6 +212,7 @@ public class Index {
 			}
 			
 		}
+		
 		
 	}
 	

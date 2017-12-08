@@ -20,17 +20,16 @@ public class RecordListDao {
 	 * 保存转换后的文字信息
 	 * @return
 	 */
-	public boolean addRecordTextInfo(String task_id, String contentJson, String originalStr, String segementStr){
+	public boolean addRecordTextInfo(String task_id, String originalStr, String segementStr){
 		int count = 0;
 		try {
 			
-			String sql = "insert into rec_record_lists_extra(task_id,content_json,content,content_words) values(?,?,?,?)";
+			String sql = "insert into rec_record_lists_extra(task_id,content,content_words) values(?,?,?)";
 			connection = DBUtil.getConnection();
 			ps = DBUtil.getPreparedStatement(connection, sql);
 			ps.setString(1, task_id);
-			ps.setString(2, contentJson);
-			ps.setString(3, originalStr);
-			ps.setString(4, segementStr);
+			ps.setString(2, originalStr);
+			ps.setString(3, segementStr);
 			
 			count = ps.executeUpdate();
 			System.out.println(count);
@@ -51,17 +50,16 @@ public class RecordListDao {
 	 * 保存转换后的文字信息
 	 * @return
 	 */
-	public boolean updateRecordTextInfo(int id, String contentJson, String originalStr, String segementStr){
+	public boolean updateRecordTextInfo(int id, String originalStr, String segementStr){
 		int count = 0;
 		try {
 			
-			String sql = "update rec_record_lists_extra set content_json=?, content=?, content_words=? where id=?";
+			String sql = "update rec_record_lists_extra set content=?, content_words=? where id=?";
 			connection = DBUtil.getConnection();
 			ps = DBUtil.getPreparedStatement(connection, sql);
-			ps.setString(1, contentJson);
-			ps.setString(2, originalStr);
-			ps.setString(3, segementStr);
-			ps.setInt(4, id);
+			ps.setString(1, originalStr);
+			ps.setString(2, segementStr);
+			ps.setInt(3, id);
 			
 			count = ps.executeUpdate();
 			System.out.println(count);
