@@ -46,7 +46,7 @@ public class Index {
 	
 	public static void main(String[] args) {
 		
-		PropertyConfigurator.configure("D:\\workspace-java\\MscDemo\\source\\log4j2.properties");
+		PropertyConfigurator.configure("source\\log4j2.properties");
 		//查询次数对应的时间间隔
 		Logger logger = Logger.getLogger(Log4jTest.class);
 		HashMap<Integer, Integer> intervalTimes = new HashMap<>();
