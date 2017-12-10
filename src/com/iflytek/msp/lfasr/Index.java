@@ -46,9 +46,10 @@ public class Index {
 	
 	public static void main(String[] args) {
 		
-		PropertyConfigurator.configure("source\\log4j2.properties");
+		PropertyConfigurator.configure("source/log4j.properties");
+		
 		//查询次数对应的时间间隔
-		Logger logger = Logger.getLogger(Log4jTest.class);
+		Logger logger = Logger.getLogger(Index.class);
 		HashMap<Integer, Integer> intervalTimes = new HashMap<>();
 		intervalTimes.put(1, 60*1);
 		intervalTimes.put(2, 60*5);
@@ -58,8 +59,8 @@ public class Index {
 		intervalTimes.put(6, 60*60*6);
 		
 		
-		/*// 加载配置文件
-		PropertyConfigurator.configure("log4j.properties");*/
+		// 加载配置文件
+//		PropertyConfigurator.configure("log4j.properties");
 		
 		// 初始化LFASR实例
 		LfasrClientImp lc = null;
@@ -79,7 +80,7 @@ public class Index {
 		
 		String filePath = "";
 		String filename = "";
-		String tempFileDir = "D:\\workspace-java\\MscDemo\\src\\com\\iflytek\\msp\\lfasr\\";
+		String tempFileDir = "tmp/download";
 		while(true){
 			RecordListDao recordDao = new RecordListDao();
 			record = recordDao.getRecord(0);
@@ -105,10 +106,10 @@ public class Index {
 				filename = String.valueOf(new Date().getTime())+"-"+record.getPath().substring(record.getPath().lastIndexOf("/")+1);
 				
 //				System.out.println("start download file: "+filename);
-				logger.info("start download file: "+filename);
+//				logger.info("start download file: "+filename);
 				filePath = FileDownload.saveUrlAs(record.getPath(), tempFileDir, filename, "GET");
-//				System.out.println("end download file:"+filePath);
-				logger.info("end download file:"+filePath);
+				System.out.println("end download file:"+filePath);
+//				logger.info("end download file:"+filePath);
 				if("".equals(filePath)){
 					
 					//标记为异常
