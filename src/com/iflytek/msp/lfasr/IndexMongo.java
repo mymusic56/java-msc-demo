@@ -45,6 +45,8 @@ public class IndexMongo {
 	//默认查询间隔时间
 	private static int intervalTime = 10;
 	
+	private static String basePath = "http://nineton.oss-cn-hangzhou.aliyuncs.com/";
+	
 	public static void main(String[] args) {
 		
 		PropertyConfigurator.configure("source/log4j.properties");
@@ -107,13 +109,13 @@ public class IndexMongo {
 				
 //				System.out.println("start download file: "+filename);
 //				logger.info("start download file: "+filename);
-				filePath = FileDownload.saveUrlAs(record.getPath(), tempFileDir, filename, "GET");
+				filePath = FileDownload.saveUrlAs(basePath+record.getPath(), tempFileDir, filename, "GET");
 				System.out.println("end download file:"+filePath);
 //				logger.info("end download file:"+filePath);
 				if("".equals(filePath)){
 					
 					//标记为异常
-					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 4, "下载失败，文件路径为空", "");
+					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 4, "下载失败，文件路径为空["+basePath+record.getPath()+"]", "");
 					
 					continue;
 				}
