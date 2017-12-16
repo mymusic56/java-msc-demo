@@ -20,7 +20,7 @@ public class MongoDBUtil {
 	
 	static {
 		try{
-			ResourceBundle rb = ResourceBundle.getBundle("properties.mdbconfig");
+			ResourceBundle rb = ResourceBundle.getBundle("mdbconfig");
 			String databaseType = rb.getString("database");
 			url = rb.getString(databaseType+"Url");
 			user = rb.getString(databaseType+"User");
