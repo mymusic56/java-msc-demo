@@ -38,7 +38,7 @@ public class IndexMongo {
 	 * */
 	private static final LfasrType type = LfasrType.LFASR_STANDARD_RECORDED_AUDIO;
 	// 等待时长（秒）
-	private static int sleepSecond = 10;
+	private static int sleepSecond = 2;
 	
 	private static int limitQueryTime = 6;
 	
