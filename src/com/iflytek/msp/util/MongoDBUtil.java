@@ -1,9 +1,12 @@
 package com.iflytek.msp.util;
 
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoDBUtil {
@@ -26,6 +29,13 @@ public class MongoDBUtil {
 			user = rb.getString(databaseType+"User");
 			databaseName = rb.getString(databaseType+"Database");
 			password = rb.getString(databaseType+"Password");
+			
+//			char[] passwords = password.toCharArray();
+//			MongoCredential credential = MongoCredential.createScramSha1Credential(user,
+//					databaseName,
+//					passwords);
+//			mongoClient = new MongoClient(new ServerAddress("192.168.88.128", 27017),
+//					Arrays.asList(credential));
 			
 			mongoClient = new MongoClient(new MongoClientURI(url));
 			database = mongoClient.getDatabase(databaseName);

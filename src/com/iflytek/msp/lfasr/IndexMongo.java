@@ -113,7 +113,7 @@ public class IndexMongo {
 				if("".equals(filePath)){
 					
 					//标记为异常
-					
+					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 4, "下载失败，文件路径为空", "");
 					
 					continue;
 				}
