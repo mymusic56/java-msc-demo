@@ -2,11 +2,14 @@ package com.iflytek.msp.po;
 
 public class RecordList {
 	
+	private int userId;
+	private String monId;
 	private int id;
 	private String path;
 	private int hasConvert;
 	
 	private String taskId;
+	
 	
 	private String content;
 	private String contentJson;
@@ -16,6 +19,21 @@ public class RecordList {
 	
 	private int fileSize;
 	
+	
+	
+	
+	public int getUserId() {
+		return userId;
+	}
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+	public String getMonId() {
+		return monId;
+	}
+	public void setMonId(String monId) {
+		this.monId = monId;
+	}
 	public int getId() {
 		return id;
 	}
