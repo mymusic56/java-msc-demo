@@ -1,5 +1,6 @@
 package com.iflytek.msp.lfasr;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,10 +41,10 @@ public class IndexMongo {
 	// 等待时长（秒）
 	private static int sleepSecond = 2;
 	
-	private static int limitQueryTime = 6;
+	private static int limitQueryTime = 9;
 	
 	//默认查询间隔时间
-	private static int intervalTime = 10;
+	private static int intervalTime = 30;
 	
 	private static String basePath = "http://nineton.oss-cn-hangzhou.aliyuncs.com/";
 	
@@ -54,12 +55,15 @@ public class IndexMongo {
 		//查询次数对应的时间间隔
 		Logger logger = Logger.getLogger(IndexMongo.class);
 		HashMap<Integer, Integer> intervalTimes = new HashMap<>();
-		intervalTimes.put(1, 60*1);
-		intervalTimes.put(2, 60*5);
-		intervalTimes.put(3, 60*10);
-		intervalTimes.put(4, 60*30);
-		intervalTimes.put(5, 60*60);
-		intervalTimes.put(6, 60*60*6);
+		intervalTimes.put(0, 60*1);//分钟
+		intervalTimes.put(1, 60*5);
+		intervalTimes.put(2, 60*10);
+		intervalTimes.put(3, 60*30);
+		intervalTimes.put(4, 60*60);//1小时
+		intervalTimes.put(5, 60*2*60);//2小时
+		intervalTimes.put(6, 60*6*60);//6小时
+		intervalTimes.put(7, 60*12*60);//12小时
+		intervalTimes.put(8, 60*24*60);//24小时
 		
 		
 		// 加载配置文件
@@ -128,13 +132,21 @@ public class IndexMongo {
 				//上传完成
 				if(res.get("status") == "1"){
 					//保存记录的任务ID和下次查询时间
-					int tmpIntervalTime = record.getFileSize() / 1000;
-					tmpIntervalTime = tmpIntervalTime == 0 ? intervalTime : tmpIntervalTime;
-					int next_query_time = ((int)new Date().getTime()/1000) + tmpIntervalTime;
+					int tmpIntervalTime = record.getFileSize() / 1024 / 1024;
+					tmpIntervalTime = tmpIntervalTime <= intervalTime ? intervalTime : tmpIntervalTime;
+					int next_query_time = (int)(new Date().getTime()/1000) + tmpIntervalTime;
 					boolean a2 = recordDao.updateUploadStatus(record.getMonId(), 3, res.get("task_id"), next_query_time);
 				}else{
 					boolean a3 = recordDao.updateUploadStatus(record.getMonId(), -1);
 				}
+				
+				
+				//删除文件
+				File file = new File(filePath);
+				if(file.exists()){
+					file.delete();
+				}
+				 
 			}else{
 				logger.info("没有需要上传的数据！");
 
@@ -177,18 +189,17 @@ public class IndexMongo {
 					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 3, dealSatus.get("data"), "");
 					
 				}else if(dealSatus.get("status") == "2"){
-					//更新下次处理时间
-					//间隔时间为文件的M数
 					
-					int tmpIntervalTime = record.getFileSize() / 1000;
-					tmpIntervalTime = tmpIntervalTime == 0 ? intervalTime : tmpIntervalTime;
-					
-					times = (int)(new Date().getTime()/1000);
 					//超过查询次数， 或者没有配置查询时间间隔， 标记异常
-					if(record.getQueryTimes() > limitQueryTime){
+					if(record.getQueryTimes() > limitQueryTime || !intervalTimes.containsKey(record.getQueryTimes())){
 						recordDao.updateUploadStatus(record.getMonId(), 4);
 					}else{
-						recordDao.updateNextQueryTime(record.getMonId(), times + tmpIntervalTime*record.getQueryTimes(), record.getQueryTimes());
+						//更新下次处理时间
+						int tmpIntervalTime = intervalTimes.get(record.getQueryTimes());
+						
+						times = (int)(new Date().getTime()/1000);
+						
+						recordDao.updateNextQueryTime(record.getMonId(), times + tmpIntervalTime, record.getQueryTimes());
 					}
 				}
 			}
@@ -381,5 +392,31 @@ public class IndexMongo {
     	res.put("originalStr", originalStr);
     	res.put("segementStr", segementStr);
     	return res;
+	}
+	
+	/**
+	 * 用户存储用户数据的目录， 作备份使用
+	 * @param userId
+	 * @return
+	 */
+	public String getUserDir(int userId){	
+		
+		String uid = String.valueOf(userId);
+		String dir = "";
+		int len = uid.length();
+		for (int i = 0; i < len; i ++) {
+			if(i % 2 == 0){
+				int endIndex = i + 2;
+				if(endIndex > len){
+					endIndex = len;
+				}
+				dir += String.format("%02d", Integer.valueOf(uid.substring(i, endIndex))) + "/";
+				if(endIndex == len){
+					break;
+				}
+			}
+		}
+		
+		return dir;
 	}
 }
