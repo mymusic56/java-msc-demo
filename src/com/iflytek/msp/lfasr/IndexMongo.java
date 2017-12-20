@@ -82,14 +82,37 @@ public class IndexMongo {
 			System.exit(0);
 		}
 		IndexMongo index = new IndexMongo();
+		
+		//文件同步记录
 		RecordList record = null;
 		
-		
+		//远程下载下来的本地文件
 		String filePath = "";
 		String filename = "";
 		String tempFileDir = "tmp/download";
+		
+		//文件上传状态
+		HashMap<String, String> uploadRes = null;
+		
+		//获取处理结果
+		HashMap<String, String> dealRes = null;
+		
+		//处理状态
+		HashMap<String, String> dealSatus = null;
+		
+		//JSON数据解析结果
+		HashMap<String, String> jsonParseRes = null;
+		
+		File file = null;//下载的文件对象
+		int tmpIntervalTime = 0;//查询时间间隔
+		int times = 0;//当前时间
+		int next_query_time = 0;//下次查询时间
+		
+		//任务ID
+		String task_id = "";
+		//数据库连接对象
+		RecordListMongoDao recordDao = new RecordListMongoDao();
 		while(true){
-			RecordListMongoDao recordDao = new RecordListMongoDao();
 			record = recordDao.getRecord(0);
 			/*
 			 * 操作一：
@@ -103,7 +126,7 @@ public class IndexMongo {
 				if("".equals(record.getPath())){
 					
 					//标记为异常
-					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 4, "文件路径为空", "");
+					recordDao.updateRecordTextInfo(record.getMonId(), 4, "文件路径为空", "");
 					continue;
 				}
 				
@@ -119,32 +142,34 @@ public class IndexMongo {
 				if("".equals(filePath)){
 					
 					//标记为异常
-					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 4, "下载失败，文件路径为空["+basePath+record.getPath()+"]", "");
+					recordDao.updateRecordTextInfo(record.getMonId(), 4, "下载失败，文件路径为空["+basePath+record.getPath()+"]", "");
 					
 					continue;
 				}
 				
 				
 				//开始上传
-				boolean a1 = recordDao.updateUploadStatus(record.getMonId(), 2);
-				HashMap<String, String> res = index.upload(lc, filePath);
+				recordDao.updateUploadStatus(record.getMonId(), 2);
+				uploadRes = index.upload(lc, filePath);
 				
 				//上传完成
-				if(res.get("status") == "1"){
+				if(uploadRes != null && uploadRes.get("status") == "1"){
 					//保存记录的任务ID和下次查询时间
-					int tmpIntervalTime = record.getFileSize() / 1024 / 1024;
+					tmpIntervalTime = record.getFileSize() / 1024 / 1024;
 					tmpIntervalTime = tmpIntervalTime <= intervalTime ? intervalTime : tmpIntervalTime;
-					int next_query_time = (int)(new Date().getTime()/1000) + tmpIntervalTime;
-					boolean a2 = recordDao.updateUploadStatus(record.getMonId(), 3, res.get("task_id"), next_query_time);
+					next_query_time = (int)(new Date().getTime()/1000) + tmpIntervalTime;
+					recordDao.updateUploadStatus(record.getMonId(), 3, uploadRes.get("task_id"), next_query_time);
 				}else{
-					boolean a3 = recordDao.updateUploadStatus(record.getMonId(), -1);
+					recordDao.updateUploadStatus(record.getMonId(), -1);
 				}
 				
 				
 				//删除文件
-				File file = new File(filePath);
-				if(file.exists()){
-					file.delete();
+				if (filePath != "" && filePath != null) {
+					file = new File(filePath);
+					if(file != null && file.exists()){
+						file.delete();
+					}
 				}
 				 
 			}else{
@@ -161,12 +186,11 @@ public class IndexMongo {
 			 * 获取第一条的处理状态
 			 */
 			
-			int times = (int)(new Date().getTime()/1000);
+			times = (int)(new Date().getTime()/1000);
 			record = recordDao.getRecord(3, times);
-			String task_id = "";
 			if(record != null){
 				task_id = record.getTaskId();
-				HashMap<String, String> dealSatus = index.getDealStatus(lc, task_id);
+				dealSatus = index.getDealStatus(lc, task_id);
 				
 				/*
 				 * 操作三： 获取处理结果
@@ -174,19 +198,19 @@ public class IndexMongo {
 				 * 自定义状态： 1:成功， 2：处理中，-1：失败
 				 */
 				if(dealSatus.get("status") == "1"){
-					HashMap<String, String> dealRes = index.getDealResultMsg(lc, task_id);
+					dealRes = index.getDealResultMsg(lc, task_id);
 					
 					//处理成功, 并更新数据库
-					int s = dealRes.get("status") == "1" ? 1 : -1;
+//					int s = dealRes.get("status") == "1" ? 1 : -1;
 					
 					//获取解析后的数据
-					HashMap<String, String> res = index.parseJson(dealRes.get("data"));
+					jsonParseRes = index.parseJson(dealRes.get("data"));
 					
 					//保存解析后的数据
-					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 1, res.get("originalStr"), res.get("segementStr"));
+					recordDao.updateRecordTextInfo(record.getMonId(), 1, jsonParseRes.get("originalStr"), jsonParseRes.get("segementStr"));
 					
 				}else if(dealSatus.get("status") == "-1"){
-					Boolean addStatus = recordDao.updateRecordTextInfo(record.getMonId(), 3, dealSatus.get("data"), "");
+					recordDao.updateRecordTextInfo(record.getMonId(), 3, dealSatus.get("data"), "");
 					
 				}else if(dealSatus.get("status") == "2"){
 					
@@ -195,7 +219,7 @@ public class IndexMongo {
 						recordDao.updateUploadStatus(record.getMonId(), 4);
 					}else{
 						//更新下次处理时间
-						int tmpIntervalTime = intervalTimes.get(record.getQueryTimes());
+						tmpIntervalTime = intervalTimes.get(record.getQueryTimes());
 						
 						times = (int)(new Date().getTime()/1000);
 						
