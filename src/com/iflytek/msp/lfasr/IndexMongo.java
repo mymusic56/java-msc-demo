@@ -232,6 +232,13 @@ public class IndexMongo {
 			//每执行完一次睡眠20s.
 			try {
 				logger.info("休息中。。。");
+				uploadRes = null;
+				//获取处理结果
+				dealRes = null;
+				//处理状态
+				dealSatus = null;
+				//JSON数据解析结果
+				jsonParseRes = null;
 				Thread.sleep(sleepSecond * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
