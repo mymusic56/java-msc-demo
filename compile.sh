@@ -1,5 +1,5 @@
 #!/bin/bash
-PROJECT_PATH=/java/java-msc-demo
+PROJECT_PATH=$(pwd)
 JAR_PATH=$PROJECT_PATH/lib
 BIN_PATH=$PROJECT_PATH/bin
 SRC_PATH=$PROJECT_PATH/src
