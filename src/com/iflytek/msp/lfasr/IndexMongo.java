@@ -279,11 +279,11 @@ public class IndexMongo {
 				res.put("status", "1");
 				res.put("msg", "success");
 				res.put("task_id", task_id);
-				System.out.println("task_id=" + task_id);
+//				System.out.println("task_id=" + task_id);
 			} else {
 				// 创建任务失败-服务端异常
-				System.out.println("ecode=" + uploadMsg.getErr_no());
-				System.out.println("failed=" + uploadMsg.getFailed());
+//				System.out.println("ecode=" + uploadMsg.getErr_no());
+//				System.out.println("failed=" + uploadMsg.getFailed());
 				
 				res.put("status", String.valueOf(uploadMsg.getErr_no()));
 				res.put("msg", uploadMsg.getFailed());
@@ -292,8 +292,8 @@ public class IndexMongo {
 		} catch (LfasrException e) {
 			// 上传异常，解析异常描述信息
 			Message uploadMsg = JSON.parseObject(e.getMessage(), Message.class);
-			System.out.println("ecode=" + uploadMsg.getErr_no());
-			System.out.println("failed=" + uploadMsg.getFailed());					
+//			System.out.println("ecode=" + uploadMsg.getErr_no());
+//			System.out.println("failed=" + uploadMsg.getFailed());					
 			
 			res.put("status", String.valueOf(uploadMsg.getErr_no()));
 			res.put("msg", uploadMsg.getFailed());
@@ -311,9 +311,9 @@ public class IndexMongo {
 					
 			// 如果返回状态不等于0，则任务失败
 			if (progressMsg.getOk() != 0) {
-				System.out.println("task was fail. task_id:" + task_id);
-				System.out.println("ecode=" + progressMsg.getErr_no());
-				System.out.println("failed=" + progressMsg.getFailed());
+//				System.out.println("task was fail. task_id:" + task_id);
+//				System.out.println("ecode=" + progressMsg.getErr_no());
+//				System.out.println("failed=" + progressMsg.getFailed());
 				
 				
 				res.put("status", "-1");
@@ -328,7 +328,7 @@ public class IndexMongo {
 				ProgressStatus progressStatus = JSON.parseObject(progressMsg.getData(), ProgressStatus.class);
 				if (progressStatus.getStatus() == 9) {
 					// 处理完成
-					System.out.println("task was completed. task_id:" + task_id);
+//					System.out.println("task was completed. task_id:" + task_id);
 					
 					res.put("status", "1");
 					res.put("msg", "success");
@@ -337,7 +337,7 @@ public class IndexMongo {
 					
 				} else {
 					// 未处理完成
-					System.out.println("task was incomplete. task_id:" + task_id + ", status:" + progressStatus.getDesc());
+//					System.out.println("task was incomplete. task_id:" + task_id + ", status:" + progressStatus.getDesc());
 					
 					res.put("status", "2");
 					res.put("msg", "success");
@@ -348,8 +348,8 @@ public class IndexMongo {
 		} catch (LfasrException e) {
 			// 获取进度异常处理，根据返回信息排查问题后，再次进行获取
 			Message progressMsg = JSON.parseObject(e.getMessage(), Message.class);
-			System.out.println("ecode=" + progressMsg.getErr_no());
-			System.out.println("failed=" + progressMsg.getFailed());
+//			System.out.println("ecode=" + progressMsg.getErr_no());
+//			System.out.println("failed=" + progressMsg.getFailed());
 			
 			res.put("status", "-1");
 			res.put("msg", "failed");
@@ -364,19 +364,19 @@ public class IndexMongo {
 		HashMap<String, String> res = new HashMap<>();
 		try {
 			Message resultMsg = lc.lfasrGetResult(task_id);
-			System.out.println(resultMsg.getData());	
+//			System.out.println(resultMsg.getData());	
 			// 如果返回状态等于0，则任务处理成功
 			if (resultMsg.getOk() == 0) {
 				// 打印转写结果
-				System.out.println(resultMsg.getData());
+//				System.out.println(resultMsg.getData());
 				
 				res.put("status", "1");
 				res.put("msg", "success");
 				res.put("data", resultMsg.getData());
 			} else {
 				// 转写失败，根据失败信息进行处理
-				System.out.println("ecode=" + resultMsg.getErr_no());
-				System.out.println("failed=" + resultMsg.getFailed());
+//				System.out.println("ecode=" + resultMsg.getErr_no());
+//				System.out.println("failed=" + resultMsg.getFailed());
 				
 				res.put("status", "-1");
 				res.put("msg", "failed");
@@ -385,8 +385,8 @@ public class IndexMongo {
 		} catch (LfasrException e) {
 			// 获取结果异常处理，解析异常描述信息
 			Message resultMsg = JSON.parseObject(e.getMessage(), Message.class);
-			System.out.println("ecode=" + resultMsg.getErr_no());
-			System.out.println("failed=" + resultMsg.getFailed());
+//			System.out.println("ecode=" + resultMsg.getErr_no());
+//			System.out.println("failed=" + resultMsg.getFailed());
 			
 			res.put("status", "-1");
 			res.put("msg", "failed");
