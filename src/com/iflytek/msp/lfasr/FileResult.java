@@ -53,6 +53,10 @@ public class FileResult extends Thread{
 		Message progressMsg = null;
 		//处理结果
 		Message resultMsg = null;
+		//是否转换成文字，0：未处理，1：已完成，
+		//2：正在上传第三方服务器，3：等待异步处理, 
+		//-1:上传第三方服务器失败， 4：异常（长时间未处理）, 
+		//5:已下载至本地，6：已处理完成，等待查询结果
 		try {
 			// 获取处理进度
 			progressMsg = lc.lfasrGetProgress(task_id);
@@ -77,6 +81,8 @@ public class FileResult extends Thread{
 					// 处理完成
 					System.out.println("task was completed. task_id:" + task_id);
 					//准备获取结果
+					
+//					recordDao.updateUploadStatus(record.getMonId(), 6, "Status Query: 数据已处理完成，等待写入数据库");
 				} else {
 					// 未处理完成
 					System.out.println("task was incomplete. task_id:"
@@ -95,6 +101,8 @@ public class FileResult extends Thread{
 						
 						recordDao.updateNextQueryTime(record.getMonId(), times + tmpIntervalTime, record.getQueryTimes());
 					}
+					//没有找到已处理完成的数据直接结束
+					return true;
 				}
 			}
 		} catch (LfasrException e) {
