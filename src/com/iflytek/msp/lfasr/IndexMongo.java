@@ -149,7 +149,7 @@ public class IndexMongo {
 				
 				
 				//开始上传
-				recordDao.updateUploadStatus(record.getMonId(), 2);
+				recordDao.updateUploadStatus(record.getMonId(), 2, "开始上传");
 				uploadRes = index.upload(lc, filePath);
 				
 				//上传完成
@@ -158,9 +158,9 @@ public class IndexMongo {
 					tmpIntervalTime = record.getFileSize() / 1024 / 1024;
 					tmpIntervalTime = tmpIntervalTime <= intervalTime ? intervalTime : tmpIntervalTime;
 					next_query_time = (int)(new Date().getTime()/1000) + tmpIntervalTime;
-					recordDao.updateUploadStatus(record.getMonId(), 3, uploadRes.get("task_id"), next_query_time);
+					recordDao.updateUploadStatus(record.getMonId(), 3, uploadRes.get("task_id"), next_query_time, "等待转写");
 				}else{
-					recordDao.updateUploadStatus(record.getMonId(), -1);
+					recordDao.updateUploadStatus(record.getMonId(), -1, "");
 				}
 				
 				
@@ -216,7 +216,7 @@ public class IndexMongo {
 					
 					//超过查询次数， 或者没有配置查询时间间隔， 标记异常
 					if(record.getQueryTimes() > limitQueryTime || !intervalTimes.containsKey(record.getQueryTimes())){
-						recordDao.updateUploadStatus(record.getMonId(), 4);
+						recordDao.updateUploadStatus(record.getMonId(), 4, "超过查询次数");
 					}else{
 						//更新下次处理时间
 						tmpIntervalTime = intervalTimes.get(record.getQueryTimes());
