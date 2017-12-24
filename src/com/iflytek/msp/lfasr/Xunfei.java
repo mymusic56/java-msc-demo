@@ -44,6 +44,10 @@ public class Xunfei {
 	private HashMap<String, String> params = new HashMap<>();
 
 	public static void main(String[] args) {
+		PropertyConfigurator.configure("source/log4j.properties");
+		
+		//查询次数对应的时间间隔
+		Logger logger = Logger.getLogger(Xunfei.class);
 		Xunfei xf = new Xunfei();
 		HashMap<String, String> params = xf.getParams();
 		params.put("has_participle", "true");
@@ -79,7 +83,6 @@ public class Xunfei {
 		while (true) {
 			if (fileDown.isAlive() == false) {
 				System.out.println("start filedown thread...");
-				fileDown = null;
 				fileDown = new FileDown(xf);
 				fileDown.start();
 			}else{
@@ -87,7 +90,6 @@ public class Xunfei {
 			}
 			
 			if (fileUpload.isAlive() == false) {
-				fileUpload = null;
 				fileUpload = new FileUpload(xf, lc);
 				System.out.println("start upload thread...");
 				fileUpload.start();
@@ -96,7 +98,6 @@ public class Xunfei {
 			}
 			if (fileResult.isAlive() == false) {
 				System.out.println("start query result thread...");
-				fileResult = null;
 				fileResult = new FileResult(xf, lc);
 				fileResult.start();
 			}else{
@@ -105,6 +106,7 @@ public class Xunfei {
 			
 			try {
 				System.out.println("....main sleep....");
+				System.gc();
 				Thread.sleep(10000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();

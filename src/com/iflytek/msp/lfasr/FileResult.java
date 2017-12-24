@@ -84,7 +84,7 @@ public class FileResult extends Thread{
 					
 //					recordDao.updateUploadStatus(record.getMonId(), 6, "Status Query: 数据已处理完成，等待写入数据库");
 				} else {
-					// 未处理完成
+					//未处理完成
 					System.out.println("task was incomplete. task_id:"
 							+ task_id + ", status:"
 							+ progressStatus.getDesc());
@@ -102,6 +102,9 @@ public class FileResult extends Thread{
 						recordDao.updateNextQueryTime(record.getMonId(), times + tmpIntervalTime, record.getQueryTimes());
 					}
 					//没有找到已处理完成的数据直接结束
+					progressMsg = null;
+					progressStatus = null;
+					recordDao = null;
 					return true;
 				}
 			}
@@ -113,6 +116,11 @@ public class FileResult extends Thread{
 			System.out.println("failed=" + progressMsg.getFailed());
 			
 			recordDao.updateRecordTextInfo(record.getMonId(), 4, "Status Query: ecode=" + progressMsg.getErr_no() + "failed=" + progressMsg.getFailed(), "");
+			
+			progressMsg = null;
+			progressStatus = null;
+			recordDao = null;
+			return false;
 		}
 			
 		/************************************************/
@@ -132,8 +140,7 @@ public class FileResult extends Thread{
 				
 				//保存解析后的数据
 				recordDao.updateRecordTextInfo(record.getMonId(), 1, jsonParseRes.get("originalStr"), jsonParseRes.get("segementStr"));
-				
-				System.out.println(resultMsg.getData());
+//				System.out.println(resultMsg.getData());
 			} else {
 				// 转写失败，根据失败信息进行处理
 				System.out.println("ecode=" + resultMsg.getErr_no());
@@ -151,6 +158,9 @@ public class FileResult extends Thread{
 			System.out.println("failed=" + resultMsg.getFailed());
 			recordDao.updateRecordTextInfo(record.getMonId(), 4, "Result Query:ecode=" + resultMsg.getErr_no()+"failed=" + resultMsg.getFailed(), "");
 		}
+		resultMsg = null;
+		recordDao = null;
+		jsonParseRes = null;
 		return true;
 	}
 	/**
