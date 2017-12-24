@@ -6,6 +6,7 @@ public class RecordList {
 	private String monId;
 	private int id;
 	private String path;
+	private String tempPath;
 	private int hasConvert;
 	
 	private String taskId;
@@ -45,6 +46,13 @@ public class RecordList {
 	}
 	public void setPath(String path) {
 		this.path = path;
+	}
+	
+	public String getTempPath() {
+		return tempPath;
+	}
+	public void setTempPath(String tempPath) {
+		this.tempPath = tempPath;
 	}
 	public int getHasConvert() {
 		return hasConvert;

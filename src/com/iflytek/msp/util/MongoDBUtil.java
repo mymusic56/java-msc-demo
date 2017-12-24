@@ -3,10 +3,13 @@ package com.iflytek.msp.util;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
+import org.bson.Document;
+
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoDBUtil {
@@ -20,6 +23,7 @@ public class MongoDBUtil {
 	
 	private static MongoClient mongoClient = null;
 	private static MongoDatabase database = null;
+	
 	
 	static {
 		try{
@@ -37,19 +41,32 @@ public class MongoDBUtil {
 //			mongoClient = new MongoClient(new ServerAddress("192.168.88.128", 27017),
 //					Arrays.asList(credential));
 			
+			
+			/*
+			 * The MongoClient() instance represents a pool of connections to the database; 
+			 * you will only need one instance of class MongoClient even with multiple threads.
+			 */
 			mongoClient = new MongoClient(new MongoClientURI(url));
-			database = mongoClient.getDatabase(databaseName);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 	
 	public static MongoDatabase getDataBase(){
-		if(database == null){
-			database = mongoClient.getDatabase(databaseName);
+		
+		if (mongoClient == null) {
+			System.out.println("connect database...");
+			mongoClient = new MongoClient(new MongoClientURI(url));
 		}
-		return database;
+		
+		return mongoClient.getDatabase(databaseName);
 	}
 	
-	
+	/**
+	 * 关闭数据库连接
+	 */
+	public static void closeAll(){
+		mongoClient.close();
+		mongoClient = null;
+	}
 }

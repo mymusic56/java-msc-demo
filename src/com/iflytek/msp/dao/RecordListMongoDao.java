@@ -53,6 +53,41 @@ public class RecordListMongoDao {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+//			MongoDBUtil.closeAll();
+		}
+		
+		if(count > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 保存下载路径
+	 * @return
+	 */
+	public boolean updateRecordDownInfo(String mId, int convertStatus, String msg, String tmpPath){
+		long count = 0;
+		try {
+			database = MongoDBUtil.getDataBase();
+			MongoCollection<Document> collection = database.getCollection("rec_record_lists");
+			
+			count = collection.updateOne(
+					eq("_id", new ObjectId(mId)), 
+					combine(
+							set("has_convert", convertStatus),
+							set("content", msg),
+							set("temp_path", tmpPath)
+					)
+			).getMatchedCount();
+			System.out.println(count);
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+//			MongoDBUtil.closeAll();
 		}
 		
 		if(count > 0){
@@ -70,7 +105,6 @@ public class RecordListMongoDao {
 	public RecordList getRecord(int has_convert){
 		RecordList rList = null;
 		try {
-			
 			database = MongoDBUtil.getDataBase();
 			MongoCollection<Document> collection = database.getCollection("rec_record_lists");
 			Document doc = collection.find(
@@ -83,6 +117,7 @@ public class RecordListMongoDao {
 				rList = new RecordList();
 				rList.setMonId(doc.getObjectId("_id").toString());
 				rList.setPath(doc.getString("file_path"));
+				rList.setTempPath(doc.getString("temp_path"));
 				rList.setUserId(doc.getInteger("user_id"));
 				rList.setHasConvert(doc.getInteger("has_convert"));
 				rList.setFileSize(doc.getInteger("file_size"));
@@ -90,6 +125,8 @@ public class RecordListMongoDao {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+//			MongoDBUtil.closeAll();
 		}
 
 		return rList;
@@ -106,7 +143,6 @@ public class RecordListMongoDao {
 	 */
 	public RecordList getRecord(int has_convert, int times) {
 		RecordList rList = null;
-
 		try {
 			
 			database = MongoDBUtil.getDataBase();
@@ -130,12 +166,14 @@ public class RecordListMongoDao {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+//			MongoDBUtil.closeAll();
 		}
 
 		return rList;
 	}
 
-	public boolean updateUploadStatus(String mId, int status) {
+	public boolean updateUploadStatus(String mId, int status, String msg) {
 		long count = 0;
 		try {
 			database = MongoDBUtil.getDataBase();
@@ -143,11 +181,16 @@ public class RecordListMongoDao {
 			
 			count = collection.updateOne(
 					eq("_id", new ObjectId(mId)), 
-					set("has_convert", status)
+					combine(
+							set("has_convert", status),
+							set("content", msg)
+					)
 			).getMatchedCount();
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+//			MongoDBUtil.closeAll();
 		}
 		if (count > 0) {
 			return true;
@@ -164,7 +207,7 @@ public class RecordListMongoDao {
 	 * @return
 	 */
 	public boolean updateUploadStatus(String mId, int status, String task_id,
-			int next_query_time) {
+			int next_query_time, String msg) {
 		long count = 0;
 		try {
 			
@@ -176,13 +219,16 @@ public class RecordListMongoDao {
 					combine(
 							set("has_convert", status), 
 							set("task_id", task_id),
-							set("next_query_time", next_query_time)
+							set("next_query_time", next_query_time),
+							set("content", msg)
 					)
 			).getMatchedCount();
 			System.out.println(count);
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+//			MongoDBUtil.closeAll();
 		}
 		if (count > 0) {
 			return true;
@@ -215,6 +261,8 @@ public class RecordListMongoDao {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+//			MongoDBUtil.closeAll();
 		}
 		if (count > 0) {
 			return true;
